@@ -25,25 +25,27 @@ class PatchGAN(nn.Module):
         )
 
     def forward(self, x1, x2):
-        x = torch.cat([x1, x2], 1)
-        return self.model(x)
+        return self.model(torch.cat([x1, x2], dim=1))
 
 
 class Generator(nn.Module):
-    def __init__(self, num_res_layers=9):
+    def __init__(self, num_res_blocks=9):
         super(Generator, self).__init__()
 
         self.model = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3),
+            nn.ReflectionPad2d(3),
+            nn.Conv2d(3, 64, kernel_size=7, stride=1),
             nn.InstanceNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.ReflectionPad2d(1),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2),
             nn.InstanceNorm2d(128),
             nn.ReLU(),
-            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),
+            nn.ReflectionPad2d(1),
+            nn.Conv2d(128, 256, kernel_size=3, stride=2),
             nn.InstanceNorm2d(256),
             nn.ReLU(),
-            *self._make_res_layers(num_res_layers),
+            *self._make_res_layers(num_res_blocks),
             nn.ConvTranspose2d(256, 128, kernel_size=3, stride=2, padding=1,
                 output_padding=1),
             nn.InstanceNorm2d(128),
@@ -52,8 +54,9 @@ class Generator(nn.Module):
                 output_padding=1),
             nn.InstanceNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(64, 3, kernel_size=7, stride=1, padding=3),
-            nn.Tanh()
+            nn.ReflectionPad2d(3),
+            nn.Conv2d(64, 3, kernel_size=7, stride=1),
+            nn.Tanh()            
         )
 
     def forward(self, x):
@@ -63,5 +66,4 @@ class Generator(nn.Module):
         layers = []
         for _ in range(num_layers):
             layers.append(ResidualBlock(256))
-
         return layers
