@@ -3,20 +3,28 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def apply_weights(model):
+    classname = model.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(model.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(model.weight.data, 1.0, 0.02)
+        nn.init.constant_(model.bias.data, 0)
+        
+
 class ResidualBlock(nn.Module):
-    def __init__(self, conv_channels):
+    def __init__(self, filters):
         super(ResidualBlock, self).__init__()
 
-        self.conv1 = nn.Conv2d(conv_channels, conv_channels, kernel_size=3,
-            stride=1, padding=1)
-        self.in1 = nn.InstanceNorm2d(conv_channels)
-        self.conv2 = nn.Conv2d(conv_channels, conv_channels, kernel_size=3,
-            stride=1, padding=1)
-        self.in2 = nn.InstanceNorm2d(conv_channels)
+        self.res_block = nn.Sequential(
+            nn.ReflectionPad2d(1),
+            nn.Conv2d(filters, filters, kernel_size=3, stride=1),
+            nn.InstanceNorm2d(filters),
+            nn.ReLU(),
+            nn.ReflectionPad2d(1),
+            nn.Conv2d(filters, filters, kernel_size=3, stride=1),
+            nn.InstanceNorm2d(filters)
+        )
 
     def forward(self, x):
-
-        identity = x
-        x = F.relu(self.in1(self.conv1(x)))
-        x = F.relu(self.in2(self.conv2(x)))
-        return F.relu(x + identity)
+        return F.relu(x + self.res_block(x))
