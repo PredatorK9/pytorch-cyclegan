@@ -9,7 +9,7 @@ class PatchGAN(nn.Module):
         super(PatchGAN, self).__init__()
 
         self.model = nn.Sequential(
-            nn.Conv2d(6, 64, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(0.2),
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.InstanceNorm2d(128),
@@ -24,8 +24,8 @@ class PatchGAN(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, x1, x2):
-        return self.model(torch.cat([x1, x2], dim=1))
+    def forward(self, x):
+        return self.model(x)
 
 
 class Generator(nn.Module):
