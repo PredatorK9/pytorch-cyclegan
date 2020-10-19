@@ -12,8 +12,8 @@ def apply_weights(model):
         nn.init.constant_(model.bias.data, 0)
 
 
-def decaying_lr(optimizer, epoch, reduct):
-    if epoch < 100:
+def decaying_lr(optimizer, epoch, decay_after, reduct):
+    if epoch < decay_after:
         pass
     else:
         for params in optimizer.param_groups:
