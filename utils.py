@@ -16,8 +16,8 @@ def decaying_lr(optimizer, epoch, decay_after, reduct):
     if epoch < decay_after:
         pass
     else:
-        for params in optimizer.param_groups:
-            params['lr'] = params['lr'] - reduct
+        for i, params in enumerate(optimizer.param_groups):
+            optimizer.param_groups[i]['lr'] = params['lr'] - reduct
 
 
 class ResidualBlock(nn.Module):
