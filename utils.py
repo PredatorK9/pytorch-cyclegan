@@ -13,9 +13,7 @@ def apply_weights(model):
 
 
 def decaying_lr(optimizer, epoch, decay_after, reduct):
-    if epoch < decay_after:
-        pass
-    else:
+    if epoch > decay_after:
         for i, params in enumerate(optimizer.param_groups):
             optimizer.param_groups[i]['lr'] = params['lr'] - reduct
 
