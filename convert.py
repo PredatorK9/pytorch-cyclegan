@@ -24,6 +24,8 @@ def get_arguments():
         default='./', help='Path to the destination folder')
     parser.add_argument('--ckpth', required=False, type=str,
         default='./', help='Path to the Generator checkpoint')
+    parser.add_argument('--YtoX', required=False,type=bool, default=False,
+        help='Convert X domain image to Y domain image')
 
     arguments = parser.parse_args()
     return arguments
@@ -36,9 +38,13 @@ def load_image(path):
     return image, name
 
 
-def convert_save(path, name, ckpth, image):
+def convert_save(path, name, ckpth, image, YtoX):
     model = Generator()
-    model.load_state_dict(torch.load(os.path.join(ckpth, 'G_YtoX.pth')))
+
+    if YtoX:
+        model.load_state_dict(torch.load(os.path.join(ckpth, 'G_YtoX.pth')))
+    else:
+        model.load_state_dict(torch.load(os.path.join(ckpth, 'G_XtoY.pth')))
 
     output_image = model(image).squeeze(0).detach().numpy()
     output_image = np.moveaxis(output_image, 0, 2)
@@ -46,13 +52,13 @@ def convert_save(path, name, ckpth, image):
         np.array((0.5, 0.5, 0.5))
     output_image = np.clip(output_image, 0, 1)
     output_image = Image.fromarray(np.uint8(output_image * 255))
-    output_image.save(os.path.join(path, name))
+    output_image.save(os.path.join(path, 'converted_' + name))
 
 
 def main():
     arguments = get_arguments()
     image, name = load_image(arguments.src)
-    convert_save(arguments.dest, name, arguments.ckpth, image)
+    convert_save(arguments.dest, name, arguments.ckpth, image, arguments.YtoX)
 
 
 if __name__ == "__main__":
